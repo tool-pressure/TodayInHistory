@@ -35,19 +35,11 @@ const generateMarkdown = (course_name, title, chapter, subtitle, course) => {
         coursetemp = convertUnicode(course)
     } catch (error) {
         console.log(error)
-        // 处理字符串中的回车和换行符
-        const cleanedCourse = course.replace(/[\r\n]/g, ''); // 去掉回车和换行
-        try {
-            coursetemp = convertUnicode(cleanedCourse);
-        } catch (innerError) {
-            console.log(innerError);
-            // 如果仍然失败，可以在这里处理
-        }
     }
 
 
     return `---
-title: ${convertedCourseName}-${convertedTitle}-${convertedSubtitle}
+title: ${convertedTitle}-${convertedSubtitle}
 description: ${convertedCourseName} - ${convertedTitle}-${chapter}-${convertedSubtitle}
 date: '${currentDate}'
 ---
@@ -66,14 +58,17 @@ app.post('/generate_markdown', (req, res) => {
         // 获取并解析 courseData 字符串
         const courseDataString = req.body.courseData;
         const unescapedStr = courseDataString.replace(/\\"/g, '\"');
+        let unescapedStraa = unescapedStr.replace(/\\n\\n/g, 'aaaaaa')
+        unescapedStraa = unescapedStraa.replace(/\\n/g, '').replace(/[\x00-\x1F]/g, '').replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+        console.log(unescapedStraa)
         // 将 JSON 字符串转换为对象
-        let courseData = JSON.parse(unescapedStr);
+        let courseData = JSON.parse(unescapedStraa);
 
         // 获取课程名称
         const course_name = courseData.course_name;
         // 生成 Markdown 文件
         const { chapter, subtitle, title } = courseData.course.info;
-        const courseContent = courseData.course.course; // 替换转义字符
+        const courseContent = courseData.course.course.replace(/aaaaaa/g, '\n'); // 替换转义字符
 
         const markdown = generateMarkdown(course_name, title, chapter, subtitle, courseContent);
 
@@ -97,3 +92,4 @@ app.post('/generate_markdown', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`服务器在 http://0.0.0.0:${PORT} 上运行`);
 });
+
